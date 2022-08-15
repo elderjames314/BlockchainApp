@@ -62,7 +62,7 @@ impl Chain {
         //generate new block
         chain.generate_new_block();
         //and finally return the chain
-        chain;
+        chain
     }
 
     //create a method that will be call for new transactions
@@ -77,7 +77,7 @@ impl Chain {
 
         //if everything fine
         //return true
-        true;
+        true
 
     }
 
@@ -92,20 +92,20 @@ impl Chain {
             None => return String::from_utf8(vec![48; 64]).unwrap()
         };
 
-        Chain::hash(&block.header);
+        Chain::hash(&block.header)
 
     }
 
     //update difficulty
     pub fn update_difficulty(&mut self, difficultiy: u32) -> bool {
         self.difficultiy = difficultiy;
-        true;
+        true
     }
 
     //update reward
     pub fn update_reward(&mut self, reward: f32) -> bool {
         self.reward = reward;
-        true;
+        true
     }
 
     //for new block generation
@@ -114,6 +114,7 @@ impl Chain {
             timestamp: time::now().to_timespec().sec,
             nonce: 0,
             pre_hash: self.last_hash(),
+            merkle: String,
             difficultiy: self.difficultiy
         };
 
@@ -184,7 +185,7 @@ impl Chain {
             //this will continuw until we have a single length in the merkle
         }
         //once we have the single length of hash in the merkle, then pop it out
-        merkle.pop().unwrap();
+        merkle.pop().unwrap()
     }
 
     //implementing proof of work
@@ -216,6 +217,28 @@ impl Chain {
                 }
             }
         }
+    }
+
+    //implementing the hash using the serde library
+    pub fn hash<T: serde::Serialize>(item: &T) -> String {
+        let input = serde_json::to_string(&item).unwrap();
+        let mut hasher = Sha256::default();
+        hasher.input(input.as_bytes());
+        let result = hasher.result();
+        let vec_result = result.to_vec();
+        //return the chain version of our vector
+
+        Chain::hex_to_string(vec_result.as_slice())
+    }
+
+    pub fn hex_to_string(vec_result: &[u8]) -> String {
+        let mut s = String::new();
+        //loop through the vector and write each byte to string
+        for b in vec_result {
+            write!(&mut s, "{:x}", b).expect("unable to write");
+        }
+        //return the string
+        s
     }
 }
 
