@@ -1,5 +1,5 @@
 # Blockchain app
-
+```
 nput a miner address: James
 Difficulty: 2
 generating genesis block! 
@@ -121,3 +121,5 @@ Menu
 4) Change reward
 0) Exit
 Enter your choice: 
+
+```
