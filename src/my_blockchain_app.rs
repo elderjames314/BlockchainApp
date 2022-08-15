@@ -186,5 +186,36 @@ impl Chain {
         //once we have the single length of hash in the merkle, then pop it out
         merkle.pop().unwrap();
     }
+
+    //implementing proof of work
+    pub fn proof_of_work(header: &mut BlockHeader) {
+        //make a loop block
+        //it will keep looping until we have a proper nonce
+        //the number of looping is determine by the difficulty
+        //for instance if difficulty is 2, then our hash has to start with 2 leading zero eg 00894434344332343223232233
+        //if the difficulty goes, then the looping will increase as well.
+        loop {
+            //create hash from the header
+            let hash = Chain::hash(header);
+            //make a slice with header of our hash as per difficulty
+            let slice = &hash[..header.difficulty as u32];
+            match slice.parse::<u32>() {
+                //if everything is fine
+                Ok(val) => {
+                    if val  != 0 {
+                        header.nonce  += 1;
+                    }else {
+                        println!("Block hahs {}", hash);
+                        break;
+                    }
+                },
+                //something went wrong
+                Err(_) => {
+                    header.nonce += 1;
+                    continue;
+                }
+            }
+        }
+    }
 }
 
