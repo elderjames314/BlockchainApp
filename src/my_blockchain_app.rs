@@ -5,8 +5,9 @@ extern crate serde_json;
 extern crate sha2;
 
 //specifically bring sha256 standard libray
-use sha2::{sha256, Digest};
+use sha2::{Digest, Sha256};
 use std::fmt::Write;
+use chrono::prelude::*;
 
 //create the transactions struct
 #[derive(Debug, Clone, Serialize)]
@@ -111,10 +112,10 @@ impl Chain {
     //for new block generation
     pub fn generate_new_block(&mut self) -> bool {
         let header = BlockHeader {
-            timestamp: time::now().to_timespec().sec,
+            timestamp: Utc::now().timestamp_millis(),
             nonce: 0,
             pre_hash: self.last_hash(),
-            merkle: String,
+            merkle: String::new(),
             difficultiy: self.difficultiy
         };
 
@@ -145,15 +146,15 @@ impl Chain {
         Chain::proof_of_work(&mut block.header);
 
         //print out the block with the debug flag
-        println!("{:?}", &block);
+        println!("{:#?}", &block);
         //everything is fine, push the block on to the chain
-        self.chain.push(block)
+        self.chain.push(block);
         //and if we eventually got here, then return true
         true
     }
 
     //get merkle_impl
-    pub fn get_merkle(current_transactions: Vec<Transaction>) ->String {
+    fn get_merkle(current_transactions: Vec<Transaction>) ->String {
         let mut merkle = Vec::new();
 
         //iterate the transaction, the hash each of the transaction and push to the merkel vector
@@ -166,12 +167,12 @@ impl Chain {
         //then we just clone the last hash and push to merkle vector
         //to get even number
         if merkle.len() % 2 == 1 {
-            let last = merkle.last().clone().unwrap();
+             let last = merkle.last().cloned().unwrap();
             merkle.push(last);
         }
 
         //we need to have a single line of merkle
-        while(merkle.len() > 1) {
+        while merkle.len() > 1 {
             //the first hash
             let mut h1 = merkle.remove(0);
             //the second hash
@@ -199,7 +200,7 @@ impl Chain {
             //create hash from the header
             let hash = Chain::hash(header);
             //make a slice with header of our hash as per difficulty
-            let slice = &hash[..header.difficulty as u32];
+            let slice = &hash[..header.difficultiy as usize];
             match slice.parse::<u32>() {
                 //if everything is fine
                 Ok(val) => {
@@ -222,13 +223,12 @@ impl Chain {
     //implementing the hash using the serde library
     pub fn hash<T: serde::Serialize>(item: &T) -> String {
         let input = serde_json::to_string(&item).unwrap();
-        let mut hasher = Sha256::default();
-        hasher.input(input.as_bytes());
-        let result = hasher.result();
-        let vec_result = result.to_vec();
-        //return the chain version of our vector
+        let mut hasher = Sha256::new();
+        hasher.update(input.as_bytes());
+        let res = hasher.finalize();
+        let vec_res = res.to_vec();
 
-        Chain::hex_to_string(vec_result.as_slice())
+        Chain::hex_to_string(vec_res.as_slice())
     }
 
     pub fn hex_to_string(vec_result: &[u8]) -> String {

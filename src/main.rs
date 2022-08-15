@@ -37,7 +37,7 @@ fn main() {
         println!("3) Change difficulty");
         println!("4) Change reward");
         println!("0) Exit");
-        print!("Enter your choice");
+        print!("Enter your choice: ");
 
         io::stdout().flush();
         choice.clear();
