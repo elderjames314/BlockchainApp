@@ -150,5 +150,41 @@ impl Chain {
         //and if we eventually got here, then return true
         true
     }
+
+    //get merkle_impl
+    pub fn get_merkle(current_transactions: Vec<Transaction>) ->String {
+        let mut merkle = Vec::new();
+
+        //iterate the transaction, the hash each of the transaction and push to the merkel vector
+        for transaction in &current_transactions {
+            let hash = Chain::hash(transaction);
+            merkle.push(hash);
+        }
+
+        //just incase our length of the merkle is old
+        //then we just clone the last hash and push to merkle vector
+        //to get even number
+        if merkle.len() % 2 == 1 {
+            let last = merkle.last().clone().unwrap();
+            merkle.push(last);
+        }
+
+        //we need to have a single line of merkle
+        while(merkle.len() > 1) {
+            //the first hash
+            let mut h1 = merkle.remove(0);
+            //the second hash
+            let mut h2 = merkle.remove(0);
+            //merge the two hash to gether
+            h1.push_str(&mut h2);
+            //then hash it again
+            let nh = Chain::hash(&h1);
+            //push it back to the merkle
+            merkle.push(nh);
+            //this will continuw until we have a single length in the merkle
+        }
+        //once we have the single length of hash in the merkle, then pop it out
+        merkle.pop().unwrap();
+    }
 }
 
